@@ -113,6 +113,9 @@ function getContainerDimensions(containerNode: Element): Dimensions {
     totalHeight = documentElement.clientHeight;
     width = visualViewport?.width ?? totalWidth;
     height = visualViewport?.height ?? totalHeight;
+    // TODO If using body as container, we should keep track of the visual viewport's offset top/left as the container rect due to zoom
+    top = visualViewport.offsetTop;
+    left = visualViewport.offsetLeft;
 
     scroll.top = documentElement.scrollTop || containerNode.scrollTop;
     scroll.left = documentElement.scrollLeft || containerNode.scrollLeft;
@@ -152,12 +155,17 @@ function getDelta(
   padding: number
 ) {
   let containerScroll = containerDimensions.scroll[axis];
+  // TODO this is a bit of a confusing name but it returns Height/Width depending on the axis
   let boundaryHeight = boundaryDimensions[AXIS_SIZE[axis]];
-  let startEdgeOffset = offset - padding - containerScroll;
-  let endEdgeOffset = offset + padding - containerScroll + size;
-
+  // TODO: the comparison below is inaccurate without, the offsets will need to include the visual viewport offsets so they are in the same coordinate system
+  // The current calculation on main you absolute position values for start/endEdge (aka the absolute left and the absolute left + overlay width roughly)
+  // rather than the values based off the current viewport rect. By subtracting the visualViewport's top/left, we can properly get the absolute values and compare them
+  // as if we are still in a 0,0 coord system
+  let startEdgeOffset = offset - padding - containerScroll - boundaryDimensions[AXIS[axis]];
+  let endEdgeOffset = offset + padding - containerScroll + size - boundaryDimensions[AXIS[axis]];
   if (startEdgeOffset < 0) {
     return -startEdgeOffset;
+
   } else if (endEdgeOffset > boundaryHeight) {
     return Math.max(boundaryHeight - endEdgeOffset, -startEdgeOffset);
   } else {
@@ -357,7 +365,11 @@ export function calculatePositionInternal(
 
   position = computePosition(childOffset, boundaryDimensions, overlaySize, placementInfo, normalizedOffset, crossOffset, containerOffsetWithBoundary, isContainerPositioned, arrowSize, arrowBoundaryOffset);
   delta = getDelta(crossAxis, position[crossAxis], overlaySize[crossSize], boundaryDimensions, containerDimensions, padding);
+  // TODO: if we don't want shifting of the overlay as user "scrolls" when pinch zoomed in, can add this in
+  // if (visualViewport.scale === 1) {
   position[crossAxis] += delta;
+  // }
+
 
   let arrowPosition: Position = {};
 
