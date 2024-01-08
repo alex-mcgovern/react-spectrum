@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Adobe. All rights reserved.
+ * Copyright 2022 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -10,12 +10,17 @@
  * governing permissions and limitations under the License.
  */
 
-import React, {HTMLAttributes} from 'react';
+import {classNames} from '@react-spectrum/utils';
+import React from 'react';
+import styles from '../example/index.css';
+import {ToggleButton} from 'react-aria-components';
 
-export interface DialogContextValue extends HTMLAttributes<HTMLElement> {
-  type: 'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover',
-  isDismissable?: boolean,
-  onClose: () => void
-}
+export default {
+  title: 'React Aria Components'
+};
 
-export const DialogContext = React.createContext<DialogContextValue | null>(null);
+export const ToggleButtonExample = () => {
+  return (
+    <ToggleButton className={classNames(styles, 'toggleButtonExample')} data-testid="toggle-button-example">Toggle</ToggleButton>
+  );
+};
